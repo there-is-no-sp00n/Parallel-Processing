@@ -27,6 +27,8 @@ int main(int argc, char *argv[])
 	double *num_in_proc = (double *)calloc(n, sizeof(double));
 
 	MPI_Status status;
+    MPI_Request request;
+    int request_done = 0;
 	
 	//initialize MPI
 	MPI_Init(&argc, &argv);
@@ -45,6 +47,7 @@ int main(int argc, char *argv[])
 	//upper limit - lower limt over number of intervals * number of processors
 	//h = 1.0/((double)(n * num_of_procs));
 	sum = 0.0;
+
 
 	for(i = 1; i < n; i++)
 	{
@@ -67,15 +70,23 @@ int main(int argc, char *argv[])
 				my_pi = num_in_proc[i-1];
 				break;
 			}
+
+			MPI_Irecv(&(num_in_proc[i]), 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &request);
 			
-			MPI_Recv(&(num_in_proc[i]), 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &status);
-			
+            //wait for the message to get here
+            MPI_Wait(&request, &status);
 		}
 		
 	}
 	else
 	{
-		MPI_Send(&total, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD);
+		MPI_Isend(&total, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, &request);
+        if(!request_done)
+        {
+            //MPI_Test(&request, &request_done, &status);
+            //wait for the request to be comepleted
+            MPI_Wait(&request, &status);
+        }        
 	}
 	
 	if(my_id == 0)
@@ -88,7 +99,6 @@ int main(int argc, char *argv[])
 			//printf("iiiin number %d %f\n", i, num_in_proc[i]);
 		//}
 		//my_pi *= h/3;
-		
 		printf("\n*****************\n");
 		printf("\n\nPI is %f and Error is %f \n", my_pi, fabs(my_pi-given_pi));
 		printf("Time taken is %f \n\n", (end_time-begin_time));
