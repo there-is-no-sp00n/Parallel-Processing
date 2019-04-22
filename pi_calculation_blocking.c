@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
 		printf("\n*****************\n");
 		printf("\n\nPI is %f and Error is %f \n", my_pi, fabs(my_pi-given_pi));
 		printf("Time taken is %f \n\n", (end_time-begin_time));
-        printf("\n*****************\n");
+        	printf("\n*****************\n");
 	}
 
 	MPI_Finalize();
