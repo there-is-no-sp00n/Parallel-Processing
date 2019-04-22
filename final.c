@@ -3,7 +3,7 @@
 #include <mpi.h>
 #include <math.h>
 
-double integrate(double x)
+double simpson_rule(double x)
 {
 	return 4/(1 + x * x);
 }
@@ -16,6 +16,8 @@ int main(int argc, char *argv[])
 	int i;
 
 	double given_pi, my_pi, y, x1, x2, l, sum, total;
+
+	double begin_time, end_time;
 	
 	given_pi = 3.141592653589793238462643;	
 
@@ -30,23 +32,29 @@ int main(int argc, char *argv[])
 	MPI_Init(&argc, &argv);
 	MPI_Comm_rank(MPI_COMM_WORLD, &my_id);
 	MPI_Comm_size(MPI_COMM_WORLD, &num_of_procs);
+
+	//start the clock
+	begin_time = MPI_Wtime();
 	
+	//the end points of the rectangles
 	x1 = ((double) my_id)/((double)num_of_procs);
 	x2 = ((double) (my_id +1))/((double)num_of_procs);
 
-	printf("x1, x2 is %f %f\n", x1, x2);
+	//printf("x1, x2 is %f %f\n", x1, x2);
 
-	l = 1.0/((double)(2 * n * num_of_procs));
+	//upper limit - lower limt over number of intervals * number of processors
+	//l = 1.0/((double)(n * num_of_procs));
 	sum = 0.0;
 
 	for(i = 1; i < n; i++)
 	{
 		y = x1 + (x2 - x1) * (((double) i)/((double) n));
-		sum = (double)integrate(y);
+		sum = (double)simpson_rule(y);
 	}
 
-	sum += integrate(x1);
-	sum += integrate(x2);
+	//getting the endpoints integrated
+	sum += simpson_rule(x1);
+	sum += simpson_rule(x2);
 	sum /= 2;
 	total = sum;
 
@@ -54,12 +62,18 @@ int main(int argc, char *argv[])
 	{
 		num_in_proc[0] = total;
 
-		for(i = 1; i < num_of_procs; i++)
+		for(i = 1; i <= num_of_procs; i++)
 		{
+			if (i == num_of_procs)
+			{
+				my_pi = num_in_proc[i-1];
+				break;
+			}
 			//printf("in number %d %f\n", i, num_in_proc[i]);
 			MPI_Recv(&(num_in_proc[i]), 1, MPI_DOUBLE, i, 0, MPI_COMM_WORLD, &status);
-			printf("in number %d %f\n", i, num_in_proc[i]);
+			//printf("in number %d %f\n", i, num_in_proc[i]);
 		}
+		
 	}
 	else
 	{
@@ -68,14 +82,17 @@ int main(int argc, char *argv[])
 	
 	if(my_id == 0)
 	{
-		for(i =0; i < num_of_procs; i++)
-		{
-			printf("my pi is %f \n", my_pi);
-			my_pi += num_in_proc[i];
+		end_time = MPI_Wtime();
+		//for(i =0; i < num_of_procs; i++)
+		//{
+			//printf("my pi is %f \n", my_pi);
+			//my_pi += num_in_proc[i];
 			//printf("iiiin number %d %f\n", i, num_in_proc[i]);
-		}
-		my_pi *= 2 * l/3;
-		printf("PI is %f\n", my_pi);
+		//}
+		//my_pi *= 2 * l/3;
+		//my_pi = num_in_proc[i];
+		printf("PI is %f and Error is %f \n", my_pi, fabs(my_pi-given_pi));
+		printf("Time taken is %f \n", (end_time-begin_time));
 	}
 
 	MPI_Finalize();
