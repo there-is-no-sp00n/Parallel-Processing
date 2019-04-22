@@ -81,12 +81,13 @@ int main(int argc, char *argv[])
 	else
 	{
 		MPI_Isend(&total, 1, MPI_DOUBLE, 0, 0, MPI_COMM_WORLD, &request);
-        if(!request_done)
-        {
-            //MPI_Test(&request, &request_done, &status);
-            //wait for the request to be comepleted
-            MPI_Wait(&request, &status);
-        }        
+        	
+		if(!request_done)
+        	{
+            		//MPI_Test(&request, &request_done, &status);
+            		//wait for the request to be comepleted
+            		MPI_Wait(&request, &status);
+        	}        
 	}
 	
 	if(my_id == 0)
