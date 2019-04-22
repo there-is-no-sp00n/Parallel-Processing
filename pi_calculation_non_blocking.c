@@ -27,8 +27,8 @@ int main(int argc, char *argv[])
 	double *num_in_proc = (double *)calloc(n, sizeof(double));
 
 	MPI_Status status;
-    MPI_Request request;
-    int request_done = 0;
+    	MPI_Request request;
+    	int request_done = 0;
 	
 	//initialize MPI
 	MPI_Init(&argc, &argv);
@@ -102,7 +102,7 @@ int main(int argc, char *argv[])
 		printf("\n*****************\n");
 		printf("\n\nPI is %f and Error is %f \n", my_pi, fabs(my_pi-given_pi));
 		printf("Time taken is %f \n\n", (end_time-begin_time));
-        printf("\n*****************\n");
+        	printf("\n*****************\n");
 	}
 
 	MPI_Finalize();
