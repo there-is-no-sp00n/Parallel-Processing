@@ -24,7 +24,7 @@ int main(int argc, char *argv[])
 	num_of_procs = atoi(argv[1]);
 	n = atoi(argv[2]);
 
-	double *num_in_proc = (double *)calloc(n, sizeof(double));
+	double *num_in_proc = (double *)calloc(num_of_procs, sizeof(double));
 
 	MPI_Status status;
     	MPI_Request request;
